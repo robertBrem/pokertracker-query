@@ -27,12 +27,10 @@ public class KafkaProvider {
         this.consumer = createConsumer();
     }
 
-
     @Produces
     public KafkaConsumer<String, String> getConsumer() {
         return consumer;
     }
-
 
     public String getKafkaAddress() {
         String address = "localhost:9092";
