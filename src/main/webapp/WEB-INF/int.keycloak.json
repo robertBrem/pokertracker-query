@@ -4,5 +4,5 @@
   "bearer-only": true,
   "auth-server-url": "https://5.189.172.129:8443/auth",
   "ssl-required": "none",
-  "resource": "pokertracker"
+  "resource": "pokertracker-query"
 }
