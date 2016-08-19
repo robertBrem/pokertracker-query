@@ -49,6 +49,26 @@
     </dependencies>
     <build>
         <finalName>pokertracker-query</finalName>
+        <plugins>
+            <plugin>
+                <groupId>com.coderplus.maven.plugins</groupId>
+                <artifactId>copy-rename-maven-plugin</artifactId>
+                <version>1.0.1</version>
+                <executions>
+                    <execution>
+                        <id>rename-file</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <sourceFile>src/main/webapp/WEB-INF/${env.STAGE}.keycloak.json</sourceFile>
+                            <destinationFile>src/main/webapp/WEB-INF/keycloak.json</destinationFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
