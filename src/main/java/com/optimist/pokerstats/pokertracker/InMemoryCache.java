@@ -137,7 +137,7 @@ public class InMemoryCache {
             }
             accountPosition.mutate(event);
         } else {
-            System.out.println("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+            System.out.println("Event not found: " + event.toString());
             throw new NotImplementedException();
         }
     }
