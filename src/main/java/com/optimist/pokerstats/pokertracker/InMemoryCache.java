@@ -12,6 +12,8 @@ import lombok.Getter;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.annotation.PostConstruct;
@@ -20,10 +22,11 @@ import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.json.Json;
+import javax.json.JsonObject;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -41,6 +44,9 @@ public class InMemoryCache {
     @Inject
     KafkaConsumer<String, String> consumer;
 
+    @Inject
+    KafkaProducer<String, String> producer;
+
     @Dedicated
     @Inject
     ExecutorService kafka;
@@ -50,8 +56,27 @@ public class InMemoryCache {
 
     @PostConstruct
     public void onInit() {
+        String topicName = getTopicName();
+        JsonObject event = Json.createObjectBuilder()
+                .add("topicName", topicName)
+                .build();
+        producer.send(new ProducerRecord<>(
+                KafkaProvider.TOPIC,
+                event.toString()));
+        consumer.subscribe(Arrays.asList(topicName));
+
         CompletableFuture
                 .runAsync(this::handleKafkaEvent, kafka);
+    }
+
+    public String getTopicName() {
+        InetAddress localHost = null;
+        try {
+            localHost = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+        return "replayAllFromStore" + localHost.getHostName();
     }
 
     public void handleKafkaEvent() {
@@ -67,7 +92,12 @@ public class InMemoryCache {
                         }
                         break;
                     default:
-                        throw new IllegalArgumentException("Illegal message type: ");
+                        System.out.println("record.value() " + record.topic() + " = " + record.value());
+                        List<CoreEvent> events2 = converter.convertToEvents(record.value());
+                        for (CoreEvent event : events2) {
+                            handle(event);
+                        }
+                        break;
                 }
             }
         }
