@@ -132,7 +132,7 @@ public class InMemoryCache {
         } else if (event instanceof AccountPositionEvent) {
             AccountPosition accountPosition = accountPositions.get(event.getId());
             if (accountPosition == null) {
-                System.out.println("rejected!");
+                System.out.println(event.toString() + " rejected!");
                 return;
             }
             accountPosition.mutate(event);
